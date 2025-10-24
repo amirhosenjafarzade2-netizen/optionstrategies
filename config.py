@@ -5,18 +5,17 @@ from typing import List, Literal
 Position = Literal["long", "short"]
 LegType = Literal["call", "put", "stock"]
 
-
 @dataclass
 class Leg:
     type: LegType
     position: Position
     strike: float
-    premium: float = 0.0  # 0 for stock
-
+    premium: float = 0.0
 
 @dataclass
 class Strategy:
     name: str
+    short_desc: str
     description: str
     legs: List[Leg]
     max_profit: str
@@ -25,13 +24,10 @@ class Strategy:
     bad: str
     is_custom: bool = False
 
-
-# ================================================================== #
-# ALL 17 PREDEFINED STRATEGIES (exact match to original JS)
-# ================================================================== #
 PREDEFINED_STRATEGIES: List[Strategy] = [
     Strategy(
         name="Long Call",
+        short_desc="Bullish: Unlimited upside, limited risk",
         description="Buying a call option gives you the right to buy the underlying stock at the strike price. Benefits from rising prices.",
         legs=[Leg(type="call", position="long", strike=100, premium=5)],
         max_profit="Unlimited",
@@ -41,6 +37,7 @@ PREDEFINED_STRATEGIES: List[Strategy] = [
     ),
     Strategy(
         name="Long Put",
+        short_desc="Bearish: Downside protection, limited risk",
         description="Buying a put option gives you the right to sell the underlying stock at the strike price. Benefits from falling prices.",
         legs=[Leg(type="put", position="long", strike=100, premium=5)],
         max_profit="Strike price - Premium",
@@ -50,6 +47,7 @@ PREDEFINED_STRATEGIES: List[Strategy] = [
     ),
     Strategy(
         name="Short Call",
+        short_desc="Neutral/Bearish: Income from premium",
         description="Selling a call option obligates you to sell the stock at the strike price if exercised. Profits from premium if stock stays flat or falls.",
         legs=[Leg(type="call", position="short", strike=100, premium=5)],
         max_profit="Premium received",
@@ -59,6 +57,7 @@ PREDEFINED_STRATEGIES: List[Strategy] = [
     ),
     Strategy(
         name="Short Put",
+        short_desc="Neutral/Bullish: Income from premium",
         description="Selling a put option obligates you to buy the stock at the strike price if exercised. Profits from premium if stock stays flat or rises.",
         legs=[Leg(type="put", position="short", strike=100, premium=5)],
         max_profit="Premium received",
@@ -68,6 +67,7 @@ PREDEFINED_STRATEGIES: List[Strategy] = [
     ),
     Strategy(
         name="Covered Call",
+        short_desc="Income + limited upside",
         description="Own the stock and sell a call option. Generates income but caps upside potential.",
         legs=[
             Leg(type="stock", position="long", strike=100, premium=0),
@@ -80,6 +80,7 @@ PREDEFINED_STRATEGIES: List[Strategy] = [
     ),
     Strategy(
         name="Protective Put",
+        short_desc="Downside insurance",
         description="Own the stock and buy a put option. Insurance against downside risk.",
         legs=[
             Leg(type="stock", position="long", strike=100, premium=0),
@@ -92,6 +93,7 @@ PREDEFINED_STRATEGIES: List[Strategy] = [
     ),
     Strategy(
         name="Bull Call Spread",
+        short_desc="Moderately bullish, defined risk",
         description="Buy a lower strike call and sell a higher strike call. Limited profit and loss.",
         legs=[
             Leg(type="call", position="long", strike=100, premium=5),
@@ -104,6 +106,7 @@ PREDEFINED_STRATEGIES: List[Strategy] = [
     ),
     Strategy(
         name="Bear Put Spread",
+        short_desc="Moderately bearish, defined risk",
         description="Buy a higher strike put and sell a lower strike put. Limited profit and loss.",
         legs=[
             Leg(type="put", position="long", strike=100, premium=5),
@@ -116,6 +119,7 @@ PREDEFINED_STRATEGIES: List[Strategy] = [
     ),
     Strategy(
         name="Long Straddle",
+        short_desc="High volatility play",
         description="Buy both a call and put at the same strike. Profits from large moves in either direction.",
         legs=[
             Leg(type="call", position="long", strike=100, premium=5),
@@ -128,6 +132,7 @@ PREDEFINED_STRATEGIES: List[Strategy] = [
     ),
     Strategy(
         name="Short Straddle",
+        short_desc="Low volatility income",
         description="Sell both a call and put at the same strike. Profits from low volatility.",
         legs=[
             Leg(type="call", position="short", strike=100, premium=5),
@@ -140,6 +145,7 @@ PREDEFINED_STRATEGIES: List[Strategy] = [
     ),
     Strategy(
         name="Long Strangle",
+        short_desc="Cheaper volatility play",
         description="Buy a call and put at different strikes. Cheaper than straddle, needs larger move to profit.",
         legs=[
             Leg(type="call", position="long", strike=110, premium=3),
@@ -152,6 +158,7 @@ PREDEFINED_STRATEGIES: List[Strategy] = [
     ),
     Strategy(
         name="Short Strangle",
+        short_desc="Wider range income",
         description="Sell a call and put at different strikes. Higher profit range than short straddle.",
         legs=[
             Leg(type="call", position="short", strike=110, premium=3),
@@ -164,6 +171,7 @@ PREDEFINED_STRATEGIES: List[Strategy] = [
     ),
     Strategy(
         name="Iron Condor",
+        short_desc="Range-bound income",
         description="Sell a strangle and buy a wider strangle for protection. Profits from low volatility with defined risk.",
         legs=[
             Leg(type="put", position="long", strike=85, premium=1),
@@ -178,6 +186,7 @@ PREDEFINED_STRATEGIES: List[Strategy] = [
     ),
     Strategy(
         name="Butterfly Spread (Call)",
+        short_desc="Pinpoint neutral",
         description="Buy 1 lower strike call, sell 2 middle strike calls, buy 1 higher strike call. Profits from low volatility.",
         legs=[
             Leg(type="call", position="long", strike=90, premium=12),
@@ -192,6 +201,7 @@ PREDEFINED_STRATEGIES: List[Strategy] = [
     ),
     Strategy(
         name="Iron Butterfly",
+        short_desc="Ultra-low volatility",
         description="Sell a straddle and buy a strangle for protection. Profits from very low volatility with defined risk.",
         legs=[
             Leg(type="put", position="long", strike=90, premium=2),
@@ -206,6 +216,7 @@ PREDEFINED_STRATEGIES: List[Strategy] = [
     ),
     Strategy(
         name="Calendar Spread (Call)",
+        short_desc="Time decay play",
         description="Sell a near-term call and buy a longer-term call at the same strike. Note: This visualization assumes same expiration for simplicity.",
         legs=[
             Leg(type="call", position="short", strike=100, premium=3),
@@ -218,6 +229,7 @@ PREDEFINED_STRATEGIES: List[Strategy] = [
     ),
     Strategy(
         name="Collar",
+        short_desc="Costless hedge",
         description="Own stock, buy protective put, sell covered call. Limits both upside and downside.",
         legs=[
             Leg(type="stock", position="long", strike=100, premium=0),
