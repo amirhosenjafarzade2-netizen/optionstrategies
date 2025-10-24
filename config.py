@@ -20,6 +20,13 @@ class Leg:
             raise ValueError("Premium cannot be negative")
         if self.type == "stock" and self.premium != 0:
             self.premium = 0.0  # Force stock premium to 0
+    
+    def net_cost(self) -> float:
+        """Calculate net cost of the leg (negative for credits)"""
+        if self.position == "long":
+            return self.premium  # Cost
+        else:
+            return -self.premium  # Credit
 
 @dataclass
 class Strategy:
@@ -39,6 +46,18 @@ class Strategy:
             raise ValueError("Strategy name cannot be empty")
         if not self.legs:
             raise ValueError("Strategy must have at least one leg")
+    
+    def net_debit_credit(self) -> float:
+        """Calculate net debit (positive) or credit (negative) of strategy"""
+        return sum(leg.net_cost() for leg in self.legs)
+    
+    def is_debit_strategy(self) -> bool:
+        """Check if strategy requires upfront payment"""
+        return self.net_debit_credit() > 0
+    
+    def is_credit_strategy(self) -> bool:
+        """Check if strategy receives upfront payment"""
+        return self.net_debit_credit() < 0
 
 # Predefined strategies with consistent formatting
 PREDEFINED_STRATEGIES: List[Strategy] = [
