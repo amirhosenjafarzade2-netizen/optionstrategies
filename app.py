@@ -41,7 +41,7 @@ with col1:
     
     # Display strategy info
     with st.expander("ℹ️ Strategy Info", expanded=False):
-        st.markdown(f"**{selected.short_desc if hasattr(selected, 'short_desc') and selected.short_desc else 'Custom Strategy'}**")
+        st.markdown(f"**{selected.short_desc}**")
         st.write(selected.description)
         if selected.max_profit:
             st.metric("Max Profit", selected.max_profit)
@@ -160,13 +160,13 @@ with tab1:
         
         plot_strategy = Strategy(
             name=selected.name,
-            short_desc=getattr(selected, 'short_desc', ''),
-            description="",
+            short_desc=selected.short_desc,
+            description=selected.description,
             legs=edit_legs,
-            max_profit="",
-            max_loss="",
-            good="",
-            bad=""
+            max_profit=selected.max_profit,
+            max_loss=selected.max_loss,
+            good=selected.good,
+            bad=selected.bad
         )
         
         st.plotly_chart(payoff_chart(plot_strategy, S0), use_container_width=True)
@@ -300,16 +300,33 @@ with tab4:
                 
                 df = pd.DataFrame(rows).set_index("Strategy")
                 
-                # Style the dataframe
-                styled_df = df.style.format({
-                    "PoP (%)": "{:.1f}",
-                    "E[P/L]": "${:.2f}",
-                    "95% VaR": "${:.2f}",
-                    "Sharpe": "{:.3f}",
-                    "Max DD": "${:.2f}"
-                }).background_gradient(subset=["PoP (%)"], cmap="RdYlGn")
+                # Display formatted dataframe without background gradient
+                st.dataframe(
+                    df.style.format({
+                        "PoP (%)": "{:.1f}",
+                        "E[P/L]": "${:.2f}",
+                        "95% VaR": "${:.2f}",
+                        "Sharpe": "{:.3f}",
+                        "Max DD": "${:.2f}"
+                    }),
+                    use_container_width=True
+                )
                 
-                st.dataframe(styled_df, use_container_width=True)
+                # Highlight best strategies
+                st.divider()
+                col_best1, col_best2, col_best3 = st.columns(3)
+                
+                with col_best1:
+                    best_pop = df["PoP (%)"].idxmax()
+                    st.metric("🏆 Best PoP", best_pop, f"{df.loc[best_pop, 'PoP (%)']:.1f}%")
+                
+                with col_best2:
+                    best_epl = df["E[P/L]"].idxmax()
+                    st.metric("💰 Best E[P/L]", best_epl, f"${df.loc[best_epl, 'E[P/L]']:.2f}")
+                
+                with col_best3:
+                    best_sharpe = df["Sharpe"].idxmax()
+                    st.metric("📈 Best Sharpe", best_sharpe, f"{df.loc[best_sharpe, 'Sharpe']:.3f}")
                 
                 # Download option
                 csv = df.to_csv()
@@ -321,6 +338,7 @@ with tab4:
                 )
             except Exception as e:
                 st.error(f"❌ Error during comparison: {str(e)}")
+                st.exception(e)
 
 # Footer
 st.markdown("---")
